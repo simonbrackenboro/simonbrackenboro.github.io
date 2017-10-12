@@ -1,3 +1,5 @@
+'use strict';
+
 let svg, width, height, tree, stratify, correction = 150, interval, hive;
 window.onload = function () {
     form();

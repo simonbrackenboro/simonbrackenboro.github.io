@@ -1,3 +1,5 @@
+'use strict';
+
 function Hive (username, password) {
     this.username = username;
     this.password = password;
