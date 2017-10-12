@@ -1,256 +1,75 @@
 <!DOCTYPE html>
 <html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title>LCH DMP in OpenGamma hello</title>
-    <script type="text/x-mathjax-config">
-MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
-    </script>
-    <script type="text/javascript"
-            src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-    </script>
-    <style type="text/css">
-        @font-face {
-            font-family: "Computer Modern";
-            src: url('http://anorien.csc.warwick.ac.uk/mirrors/CTAN/fonts/cm-unicode/fonts/otf/cmunrm.otf');
+<head>
+    <meta charset="utf-8">
+    <style>
+        form {
+            width: 100%;
         }
 
-        @font-face {
-            font-family: "Computer Modern";
-            src: url('http://anorien.csc.warwick.ac.uk/mirrors/CTAN/fonts/cm-unicode/fonts/otf/cmunrb.otf');
-            font-weight: bold;
+        .float-left {
+            float: left;
+            margin: 0 5pt 0 0 ;
         }
 
-        @font-face {
-            font-family: "Computer Modern";
-            src: url('http://anorien.csc.warwick.ac.uk/mirrors/CTAN/fonts/cm-unicode/fonts/otf/cmunsi.otf');
-            font-style: italic;
+        .v-outer-h {
+            height: 100%;
+            display: flex;
+            float:left;
+            align-items: center;
         }
 
-        body {
-            font-family: "Computer Modern", serif;
-            width: 600px;
-            font-size: large;
-            margin-top: 1% !important;
-            margin-left: 10% !important;
-            margin-right: auto;
+        input, label, button, select {
+            font: 10px sans-serif;
+            margin:0 5px 0 0;;
+        }
+
+        .v-outer {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .b-outer {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .inner {
+            padding: 5px 5px 5px 5px;
+            width: 100%;
+            border: 1px red solid;;
+        }
+
+        div {
+            color: black;
+            font: 10px sans-serif;
+
         }
 
         p {
-            font-family: "Computer Modern", serif;
-            font-size: large;
-            margin-top: 1% !important;
-            margin-left: 2% !important;
-            margin-right: auto;
+            color: black;
+            font: 10px sans-serif;
+            margin: 0 0 0 0;
+        }
+
+        .link {
+            fill: none;
+            stroke: #555;
+            stroke-opacity: 0.4;
+            stroke-width: 1.5px;
         }
     </style>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="hive.js"></script>
+    <script src="apiary.js"></script>
 </head>
 <body>
-<h1>LCH DMP in OpenGamma</h1>
-
-<p>
-    In order to road test the OpenGamma Platform, this document discusses the actions taken to value a portfolio of
-    999 &#8364; swaps using the OpenGamma Platform. These swaps were taken from the EUR_N1 LLC portfolio in the May 2014
-    LCH DMP fire drill. You can find the files related to this fire drill at <a href="\\gargamel\shared\Clearing\Fire Drill May 2014
-    (LLC)">\\gargamel\shared\Clearing\Fire Drill May 2014 (LLC)</a>. This allows us to use the the LCH valuations and
-    <a href="http://clearing.formicary.net">Default Management Process (DMP) Portfolio Analysis Tool</a> to
-    validate the results.
-</p>
-
-<h2>Quick overview of OpenGamma</h2>
-
-<p>
-    OpenGamma is a open source financial analytics platform that supports ad-hoc calculation with near real time
-    streaming analytics.
-</p>
-
-<p>
-    The full OpenGamma documentation relevant to this discussion is available
-    <a href="http://docs.opengamma.com/display/DOC210/OpenGamma+Platform+Documentation">here</a>.
-</p>
-
-<p>
-    We will be mostly concerned with the swap valuation functionality provided by OpenGamma.
-</p>
-
-<h2>Installing the system</h2>
-
-<p>
-    The soruce distribution is available on <a href="https://github.com/OpenGamma/OG-Platform">GitHub</a> and you can
-    run the server using the OpenGamma Maven plugins opengamma:server-&#x2731; which are documented
-    <a href="https://github.com/OpenGamma/OG-Platform/blob/master/README.md">here</a>. Nota bene that I was only able
-    to get this working using <a href="http://maven.apache.org/docs/3.0.5/release-notes.html">apache-maven-3.0.5</a>.
-</p>
-
-<h2><a id="ID">Input Data</a></h2>
-
-<h3>Trade</h3>
-
-<p>
-    The trade data for this portfolio is provided in the FpML format a consists of 999 XMLs files
-    which you can find at
-    <a href="\\gargamel\shared\Clearing\Fire Drill May 2014 (LLC)\Auction Packs\FpML\EUR_20140513_N1-fpml.zip">
-        \\gargamel\shared\Clearing\Fire Drill May 2014 (LLC)\Auction Packs\FpML\EUR_20140513_N1-fpml.zip
-    </a>.
-</p>
-
-<h3>Market Data</h3>
-
-<p>
-    The LCH DMP process supplies discount and forward curves as CSV files which you can find at
-    <a href=" \\gargamel\shared\Clearing\Fire Drill May 2014 (LLC)\Auction Packs\Reports\DMPAUC-Reports-20140513_EUR_N1.zip">
-        \\gargamel\shared\Clearing\Fire Drill May 2014 (LLC)\Auction Packs\Reports\DMPAUC-Reports-20140513_EUR_N1.zip
-    </a>. Note that the discount and forward curves are provided as par curves and zero curves for speed and simplicity
-    of configuration we have opted to load to the zero curves.
-</p>
-
-<h3>Static</h3>
-
-<p>
-    The LCH DMP process supplies calendars and historical fixings as CSV files which you can find at
-    <a href=" \\gargamel\shared\Clearing\Fire Drill May 2014 (LLC)\Auction Packs\Reports\DMPAUC-Reports-20140513_EUR_N1.zip">
-        \\gargamel\shared\Clearing\Fire Drill May 2014 (LLC)\Auction Packs\Reports\DMPAUC-Reports-20140513_EUR_N1.zip
-    </a>.
-</p>
-
-<h2>Importing Data</h2>
-
-<p>A mechanism is required to load the data (described in the <a href="#ID">Input Data</a> section) in to the OpenGamma
-    system each mechanism is discussed in turn below. </p>
-
-<h3>Trade</h3>
-
-<p>OpenGamma supports an <a href="http://docs.opengamma.com/display/DOC210/XML+file+format">XML format</a> for
-    importing trades. We will use this mechanism to import the trade data into OpenGamma. This requires us to develop a
-    transformation of the trade FpML into the OpenGamma XML format. This transformation was achieved using a
-    <a href="http://saxon.sourceforge.net/">Saxon</a> based XSLT transformation as we need the functionality to
-    transform multiple XML files into a single op-portfolio XML.</p>
-
-<h3>Market Data</h3>
-
-<p>
-    As we have already discussed we have opted to load the zero curves for the &#8364; Swap Portfolio.
-    The out of the box OpenGamma solution contains an ExampleLiveDataServer that implements simulated
-    real time data. Even though our curve date was not real time we opted to modify this code to load our
-    zero curve data and to remove the randomisation of the configured data on each tick.
-</p>
-
-<h3>Static</h3>
-
-<h4>Historical Fixing Loader</h4>
-
-The historical fixings are stored in a databased backed HistoricalTimeSeriesMaster. The Server initialisation routines
-were modified to also load the LCH fixing data using the code listed below :-
-
-<pre>DMPHistoricalFixingReader</pre>
-<pre>ExampleDatabasePopulator</pre>
-
-<h4>Holiday Calendars Loader</h4>
-
-The holiday calendars are stored in a databased backed HolidayMaster. The Server initialisation routines
-were modified to also load the LCH fixing data using the code listed below :-
-
-<pre>DMPHolidayFileReader</pre>
-<pre>ExampleHolidayLoader</pre>
-
-Note that the swap trades link to a region which intern links to a holiday calendar it is there necessary to
-populate regions matching the calendars themselves which is discussed below.
-
-<h4>Region Loader</h4>
-
-Strangely the Region master dat is not stored in the database but rather in a hardcoded in memory version.
-This was modified to load all the "new" regions from the calendar file in addition to the regions that existed
-previously.
-
-<pre>InMemoryRegionMasterComponentFactory</pre>
-
+<form></form>
+<div class="b-outer"><svg width="700" height="700"></svg></div>
 </body>
-
-<h2>Configuring the valuation</h2>
-
-The zero curves are loaded as live market data. But before they can be used by the valuation code we must define the
-yield curve definition along with the associated conventions. The class
-
-<pre>SyntheticLCHConventions</pre>
-
-loads the curve conventions and the method
-
-<pre>YieldCurveConfigPopulator.populateCurveDefinitionConfigMaster()</pre>
-
-loads the yield curve definitions.
-
-<h2>Defects and resolutions</h2>
-
-<p>The OpenGamma v2.1.0 release was used for all the testing.</p>
-
-<ol>
-    <li>OpenGamma does not support IMM date rolls on swap trades out of the box. So we implemented the feature to get a
-        correct
-        match for the IMM trades in the portfolio
-    </li>
-    <li>The payment filtering in OpenGamma includes all payments greater than or equal to the valuation date the LCH
-        valuation uses a more complex filtering logic in the case of EUR swaps only coupons paying on a date strictly
-        greater than the valuation day plus 1 business day are included. The code was modified to reflect this logic.
-    </li>
-    <li>
-        All the OIS swaps considered have a payment lag of 1 business day this was not correctly reflected by the base
-        OpenGamma code and was modified to correct this difference.
-    </li>
-    <li>
-        By default OpenGamma expects to bootstrap the discount and forward curves from the market prices. We choose to
-        supply this information as zero curves directly to minimize the scope and configuration need to get things
-        working. This required a code change to suppress the bootstrap code and align the zero curve
-        day count conventions from ACT/ACT to ACT/365, which is the LCH curve convention.
-    </li>
-    <li>
-        By default OpenGamma selects a single basis curve for the forward rate curve. This logic was extended to support
-        selection of the correct basis curve.
-    </li>
-    <li>
-        By default OpenGamma selects a single basis curve for the forward rate curve. This logic was extended to support
-        selection of the correct basis curve. You can see the new code in
-        <em>FixedIncomeInstrumentCurveExposureHelper.getCurveNamesForLCHSecurity()</em>
-    </li>
-
-</ol>
-
-<h2>Valuation comparison</h2>
-
-The full result can be found <a href="NPV-Trades-diff.xls">here</a>.
-
-<h3>LCH vs OpenGamma</h3>
-
-<img src="LCHvsOPENGAMMA.png">
-
-<h3>LCH vs Calypso</h3>
-<img src="LCHvsCALYPSO.png">
-
-<h2>Potential Future Improvements</h2>
-
-<ol>
-    <li>
-        Work convert the currently prototype code into a more robust "production" code.
-    </li>
-
-    <li>
-        Generate the Default Management Process file using a custom developed view rather than the current logging
-        based solution.
-    </li>
-    <li>
-        Move code modification into separate classes that are specific to the DMP run.
-    </li>
-    <li>
-        Add new test case to "prove" the new code and ensure that the existing test cases which are currently broken
-        (due to the new changes) work.
-    </li>
-    <li>
-        Add further portfolios to test the solution further.
-    </li>
-    <li>
-        Add support for FRAs.
-    </li>
-    <li>
-        Add support for VNSs.
-    </li>
-</ol>
 </html>
