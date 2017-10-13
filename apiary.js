@@ -38,7 +38,7 @@ function mode(p, d) {
 
     select.attr("class", "mode").on('change', function (value) {
         hive.setMode(function () {
-            update([])
+            hive.update(update);
         }, d.data.id, d.data.type, this.value);
     });
 }
@@ -58,7 +58,7 @@ function boost(p, d) {
 
     select.on('change', function (value) {
         hive.setMode(function () {
-            update([])
+            hive.update(update);
         }, d.data.id, d.data.type, 'BOOST', 22, this.value);
         select.property('value', 'boost');
     });
@@ -219,7 +219,7 @@ function form() {
             form.select("button").text('Login');
             hive.doLogout();
             hive = undefined;
-            update([]);
+            update();
         }
     });
 }
