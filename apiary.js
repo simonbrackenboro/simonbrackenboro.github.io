@@ -44,7 +44,7 @@ function mode(p, d) {
 }
 
 function boost(p, d) {
-    var select = p.append("select").attr("class", "boost-select");
+    var select = p.append("select").attr("class", "boostselect");
 
     var data = ["30", "60", 'BOOST'];
     var options = select.selectAll('option')
@@ -162,7 +162,7 @@ function update(a) {
             selectAll.selectAll(".status").text(d.data.state.status);
             selectAll.selectAll(".target").text(d.data.state.target);
             selectAll.selectAll(".boost").text(d.data.state.boost);
-            selectAll.selectAll(".boost-select").property('value','BOOST');
+            selectAll.selectAll(".boostselect").property('value','BOOST');
             selectAll.selectAll(".mode").property('value', d.data.state.mode);
         });
 
