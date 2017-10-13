@@ -24,8 +24,8 @@ function diagonal(s, d) {
 
 function mode(p, d) {
     var div = p.append("div");
-    div.append("label").attr("class", "mode").text("Mode");
-    var select = div.append("select");
+    div.append("label").text("Mode");
+    var select = div.append("select").attr("class", "mode");
 
 
     var data = ["SCHEDULE", "MANUAL", "OFF", 'BOOST'];
@@ -36,16 +36,15 @@ function mode(p, d) {
             return d;
         });
 
-    select.attr("class", "mode").on('change', function () {
-        selectValue = select.property('value');
+    select.attr("class", "mode").on('change', function (value) {
         hive.setMode(function () {
-            update()
-        }, d.data.id, d.data.type, selectValue);
+            update([])
+        }, d.data.id, d.data.type, this.value);
     });
 }
 
 function boost(p, d) {
-    var select = p.append("select");
+    var select = p.append("select").attr("class", "boost-select");
 
     var data = ["30", "60", 'BOOST'];
     var options = select.selectAll('option')
@@ -57,11 +56,10 @@ function boost(p, d) {
 
     select.attr("class", "float-left").property('value', 'BOOST');
 
-    select.on('change', function () {
-        selectValue = select.property('value');
+    select.on('change', function (value) {
         hive.setMode(function () {
-            update()
-        }, d.data.id, d.data.type, 'BOOST', 22, selectValue);
+            update([])
+        }, d.data.id, d.data.type, 'BOOST', 22, this.value);
         select.property('value', 'boost');
     });
 }
@@ -115,7 +113,7 @@ let enter_types = {
 
 function update(a) {
 
-    if(a.length === 0) {
+    if (a.length === 0) {
         svg.selectAll(".link").data(a).exit().remove();
         svg.selectAll(".node").data(a).exit().remove();
         return;
@@ -164,6 +162,7 @@ function update(a) {
             selectAll.selectAll(".status").text(d.data.state.status);
             selectAll.selectAll(".target").text(d.data.state.target);
             selectAll.selectAll(".boost").text(d.data.state.boost);
+            selectAll.selectAll(".boost-select").text('BOOST');
             selectAll.selectAll(".mode").property('value', d.data.state.mode);
         });
 
@@ -204,11 +203,10 @@ function form() {
 
     form.append("button").attr('type', 'submit').text('Login');
 
-    d3.select("form").on("submit", function()
-    {
+    d3.select("form").on("submit", function () {
         d3.event.preventDefault();
-        if(form.select("button").text() === 'Login') {
-            hive = new Hive(form.select("#username").property("value"),form.select("#password").property("value"));
+        if (form.select("button").text() === 'Login') {
+            hive = new Hive(form.select("#username").property("value"), form.select("#password").property("value"));
             hive.doLogin(function () {
                 hive.update(update);
                 form.select("button").text('Logout');
