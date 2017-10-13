@@ -162,7 +162,7 @@ function update(a) {
             selectAll.selectAll(".status").text(d.data.state.status);
             selectAll.selectAll(".target").text(d.data.state.target);
             selectAll.selectAll(".boost").text(d.data.state.boost);
-            selectAll.selectAll(".boost-select").text('BOOST');
+            selectAll.selectAll(".boost-select").property('value',('BOOST');
             selectAll.selectAll(".mode").property('value', d.data.state.mode);
         });
 
