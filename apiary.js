@@ -219,7 +219,7 @@ function form() {
             form.select("button").text('Login');
             hive.doLogout();
             hive = undefined;
-            update();
+            update([]);
         }
     });
 }
